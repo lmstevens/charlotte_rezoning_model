@@ -1,10 +1,17 @@
 # Dependencies
+import os
 import requests
 import json
 import pandas as pd
 import types
 
 # from geojson_utils import centroid # does not like decimals
+
+def save_to_csv(df, filename):
+    path = os.path.dirname(__file__)
+    df_csv = f"{path}/../resources/{filename}"
+    df.to_csv(df_csv, index=False)
+
 
 def getCentralPoint(feature):
     lat = 0.0
@@ -32,12 +39,16 @@ url = 'https://opendata.arcgis.com/datasets/19c8803ab1214b21859127d463034520_23.
 
 geo_data = requests.get(url).json()
 
+rezoning_history = []
 for feature in geo_data['features']:
-    feature['centroid'] = getCentralPoint(feature)
+    rezoning_request = feature["properties"]
+    rezoning_request["centroid"] = getCentralPoint(feature)
+    rezoning_history.append(rezoning_request)
 
 
-rezoning_history_df = pd.DataFrame(geo_data['features'])
-print(rezoning_history_df.head())
+rezoning_history_df = pd.DataFrame(rezoning_history)
+save_to_csv(rezoning_history_df, "rezoning_history.csv")
+#print(rezoning_history_df.head())
 
 # Print the json
 #print(geo_data)
